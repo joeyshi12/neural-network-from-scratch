@@ -1,31 +1,37 @@
 import numpy as np
-from sklearn.preprocessing import LabelBinarizer
 from tqdm import tqdm
 
-from nn.util import flatten_weights, sigmoid, sigmoid_prime, unflatten_weights
+from neural_network.util import (
+    flatten_weights,
+    sigmoid,
+    sigmoid_prime,
+    unflatten_weights,
+)
 
 
-class NNClassifier:
+class MLPClassifier:
     def __init__(
-        self, hidden_layer_sizes=None, alpha=0.001, lammy=1, epochs=10, verbose=False
+        self, hidden_layer_sizes=None, alpha=0.0001, lammy=1, epochs=10, verbose=False
     ):
-        self.layer_sizes = None
-        self.weights = None
         self.hidden_layer_sizes = hidden_layer_sizes if hidden_layer_sizes else [100]
         self.alpha = alpha
         self.lammy = lammy
         self.epochs = epochs
         self.verbose = verbose
+        self.layer_sizes = []
+        self.weights = []
 
     def fun_obj(self, weights_flat, X, Y):
         weights = unflatten_weights(weights_flat, self.layer_sizes)
         activations = [X]
         activation_derivatives = []
+        Z = None
         for W, b in weights:
             Z = activations[-1] @ W.T + b
             activations.append(sigmoid(Z))
             activation_derivatives.append(sigmoid_prime(Z))
 
+        assert Z is not None
         f = np.sum(-Z[Y.astype(bool)] + np.log(np.sum(np.exp(Z), axis=1)))
         grad = np.exp(Z) / np.sum(np.exp(Z), axis=1)[:, None] - Y
         grad_W = grad.T @ activations[-2]
@@ -45,7 +51,9 @@ class NNClassifier:
         return f, g
 
     def fit(self, X, y):
-        Y = LabelBinarizer().fit_transform(y)
+        Y = np.zeros((y.size, 10))
+        for i, digit in enumerate(y):
+            Y[i, digit] = 1
         self.layer_sizes = [X.shape[1]] + self.hidden_layer_sizes + [Y.shape[1]]
         size = 0
         for i in range(len(self.layer_sizes) - 1):
@@ -76,7 +84,9 @@ class NNClassifier:
         self.weights = unflatten_weights(weights_flat, self.layer_sizes)
 
     def predict(self, X):
+        Z = None
         for W, b in self.weights:
             Z = X @ W.T + b
             X = 1 / (1 + np.exp(-Z))
+        assert Z is not None
         return np.argmax(Z, axis=1)

@@ -3,14 +3,14 @@ import sys
 import numpy as np
 import pygame as pg
 
-from nn import NNClassifier
+from neural_network import MLPClassifier
 
 
 class PaintManager:
     RADIUS: int = 24
     UNIT_LENGTH: int = 4
 
-    def __init__(self, model: NNClassifier, width: int, heading_size: int):
+    def __init__(self, model: MLPClassifier, width: int, heading_size: int):
         pg.init()
         pg.display.set_caption("Digit Recognition")
         self.font = pg.font.SysFont("lucidaconsole", 16, bold=True)

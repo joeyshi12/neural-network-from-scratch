@@ -1,11 +1,14 @@
 import numpy as np
 
 
-def flatten_weights(weights):
+def flatten_weights(weights) -> np.ndarray:
     return np.concatenate([w.flatten() for w in sum(weights, ())])
 
 
-def unflatten_weights(weights_flat: np.ndarray, layer_sizes: list[int]):
+def unflatten_weights(
+    weights_flat: np.ndarray,
+    layer_sizes: list[int]
+) -> list[tuple[np.ndarray, np.ndarray]]:
     weights = []
     counter = 0
     for i in range(len(layer_sizes) - 1):
