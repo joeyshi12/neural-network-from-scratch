@@ -1,12 +1,14 @@
-from tqdm import tqdm
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
+from tqdm import tqdm
 
-from nnc.util import unflatten_weights, flatten_weights, sigmoid, sigmoid_prime
+from nn.util import flatten_weights, sigmoid, sigmoid_prime, unflatten_weights
 
 
 class NNClassifier:
-    def __init__(self, hidden_layer_sizes=None, alpha=0.001, lammy=1, epochs=10, verbose=False):
+    def __init__(
+        self, hidden_layer_sizes=None, alpha=0.001, lammy=1, epochs=10, verbose=False
+    ):
         self.layer_sizes = None
         self.weights = None
         self.hidden_layer_sizes = hidden_layer_sizes if hidden_layer_sizes else [100]
@@ -38,7 +40,7 @@ class NNClassifier:
             g = [(grad_W, grad_b)] + g
         g = flatten_weights(g)
 
-        f += 0.5 * self.lammy * np.sum(weights_flat ** 2)
+        f += 0.5 * self.lammy * np.sum(weights_flat**2)
         g += self.lammy * weights_flat
         return f, g
 
@@ -47,15 +49,25 @@ class NNClassifier:
         self.layer_sizes = [X.shape[1]] + self.hidden_layer_sizes + [Y.shape[1]]
         size = 0
         for i in range(len(self.layer_sizes) - 1):
-            size += self.layer_sizes[i + 1] * self.layer_sizes[i] + self.layer_sizes[i + 1]
+            size += (
+                self.layer_sizes[i + 1] * self.layer_sizes[i] + self.layer_sizes[i + 1]
+            )
         weights_flat = 0.01 * np.random.randn(size)
 
         num_batches = 100
         for epoch in range(self.epochs):
             loss = None
-            reordered_indices = np.random.choice(X.shape[0], size=X.shape[0], replace=False)
-            for i in tqdm(range(num_batches), desc=f"Epoch {epoch + 1}/{self.epochs}", disable=not self.verbose):
-                batch = reordered_indices[i * X.shape[0] // num_batches: (i + 1) * X.shape[0] // num_batches]
+            reordered_indices = np.random.choice(
+                X.shape[0], size=X.shape[0], replace=False
+            )
+            for i in tqdm(
+                range(num_batches),
+                desc=f"Epoch {epoch + 1}/{self.epochs}",
+                disable=not self.verbose,
+            ):
+                batch = reordered_indices[
+                    i * X.shape[0] // num_batches : (i + 1) * X.shape[0] // num_batches
+                ]
                 loss, gradient = self.fun_obj(weights_flat, X[batch], Y[batch])
                 weights_flat -= self.alpha * gradient
             if self.verbose:

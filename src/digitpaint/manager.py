@@ -1,9 +1,9 @@
 import sys
-import joblib
+
 import numpy as np
 import pygame as pg
 
-from nnc.nnclassifier import NNClassifier
+from nn import NNClassifier
 
 
 class PaintManager:
@@ -15,12 +15,14 @@ class PaintManager:
         pg.display.set_caption("Digit Recognition")
         self.font = pg.font.SysFont("lucidaconsole", 16, bold=True)
         self.surface = pg.display.set_mode((width, width + heading_size))
-        self.clock=pg.time.Clock()
+        self.clock = pg.time.Clock()
         self.model = model
         self.heading_size = heading_size
 
         self.surface.fill((255, 255, 255))  # fill surface with white pixels
-        pg.draw.rect(self.surface, (160, 160, 160), (0, 0, width, heading_size))  # fill heading area with grey pixels
+        pg.draw.rect(
+            self.surface, (160, 160, 160), (0, 0, width, heading_size)
+        )  # fill heading area with grey pixels
         self.canvas = np.zeros((width // self.UNIT_LENGTH, width // self.UNIT_LENGTH))
 
     def handle_event(self, event: pg.event.Event) -> None:
@@ -48,7 +50,7 @@ class PaintManager:
             for j in range(-self.RADIUS, self.RADIUS + 1):
                 if 0 > row + i or row + i >= rows or 0 > col + j or col + j >= cols:
                     continue
-                if i ** 2 + j ** 2 > self.RADIUS:
+                if i**2 + j**2 > self.RADIUS:
                     continue
                 if not self.canvas[row + i][col + j]:
                     self.canvas[row + i][col + j] = 1
@@ -56,7 +58,7 @@ class PaintManager:
                         self.UNIT_LENGTH * (col + j),
                         self.heading_size + self.UNIT_LENGTH * (row + i),
                         self.UNIT_LENGTH,
-                        self.UNIT_LENGTH
+                        self.UNIT_LENGTH,
                     )
                     pg.draw.rect(self.surface, (0, 0, 0), rect)
 
@@ -66,7 +68,10 @@ class PaintManager:
         for i in range(28):
             for j in range(28):
                 data[i][j] = np.average(
-                    self.canvas[cell_length * i:cell_length * (i + 1), cell_length * j:cell_length * (j + 1)]
+                    self.canvas[
+                        cell_length * i : cell_length * (i + 1),
+                        cell_length * j : cell_length * (j + 1),
+                    ]
                 )
         digit = self.model.predict([data.flatten()])[0]
         width, _ = self.surface.get_size()
@@ -81,15 +86,3 @@ class PaintManager:
         width, height = self.surface.get_size()
         rect = (0, self.heading_size, width, height - self.heading_size)
         pg.draw.rect(self.surface, (255, 255, 255), rect)
-
-
-def paint_loop(model_file: str) -> None:
-    manager = PaintManager(
-        model=joblib.load(model_file),
-        width=560,
-        heading_size=40
-    )
-    while True:
-        for event in pg.event.get():
-            manager.handle_event(event)
-        manager.update()

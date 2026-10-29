@@ -1,4 +1,3 @@
-from typing import List
 import numpy as np
 
 
@@ -6,15 +5,18 @@ def flatten_weights(weights):
     return np.concatenate([w.flatten() for w in sum(weights, ())])
 
 
-def unflatten_weights(weights_flat: np.ndarray, layer_sizes: List[int]):
+def unflatten_weights(weights_flat: np.ndarray, layer_sizes: list[int]):
     weights = []
     counter = 0
     for i in range(len(layer_sizes) - 1):
         W_size = layer_sizes[i + 1] * layer_sizes[i]
         b_size = layer_sizes[i + 1]
-        W = np.reshape(weights_flat[counter:counter + W_size], (layer_sizes[i + 1], layer_sizes[i]))
+        W = np.reshape(
+            weights_flat[counter : counter + W_size],
+            (layer_sizes[i + 1], layer_sizes[i]),
+        )
         counter += W_size
-        b = weights_flat[counter:counter + b_size][None]
+        b = weights_flat[counter : counter + b_size][None]
         counter += b_size
         weights.append((W, b))
     return weights
