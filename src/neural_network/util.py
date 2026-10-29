@@ -25,6 +25,15 @@ def unflatten_weights(
     return weights
 
 
+def label_binarizer_fit_transform(y) -> np.ndarray:
+    labels = np.unique(y)
+    indices = {label: i for i, label in enumerate(labels)}
+    Y = np.zeros((y.size, len(labels)))
+    for i, label in enumerate(y):
+        Y[i, indices[label]] = 1
+    return Y
+
+
 def sigmoid(x: np.ndarray) -> np.ndarray:
     return 1 / (1 + np.exp(-x))
 

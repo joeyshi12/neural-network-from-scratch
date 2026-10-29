@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 from neural_network.util import (
     flatten_weights,
+    label_binarizer_fit_transform,
     sigmoid,
     sigmoid_prime,
     unflatten_weights,
@@ -11,7 +12,7 @@ from neural_network.util import (
 
 class MLPClassifier:
     def __init__(
-        self, hidden_layer_sizes=None, alpha=0.0001, lammy=1, epochs=10, verbose=False
+        self, hidden_layer_sizes=None, alpha=0.001, lammy=1, epochs=10, verbose=False
     ):
         self.hidden_layer_sizes = hidden_layer_sizes if hidden_layer_sizes else [100]
         self.alpha = alpha
@@ -51,9 +52,7 @@ class MLPClassifier:
         return f, g
 
     def fit(self, X, y):
-        Y = np.zeros((y.size, 10))
-        for i, digit in enumerate(y):
-            Y[i, digit] = 1
+        Y = label_binarizer_fit_transform(y)
         self.layer_sizes = [X.shape[1]] + self.hidden_layer_sizes + [Y.shape[1]]
         size = 0
         for i in range(len(self.layer_sizes) - 1):
