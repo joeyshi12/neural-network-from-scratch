@@ -1,6 +1,6 @@
 # neural-network-from-scratch
 
-A implementation of a neural network based on PyTorch `torch.nn` module style.
+An implementation of a neural network based on PyTorch `torch.nn` module style.
 Full article explanation is contained in [nn.ipynb](notebooks/nn.ipynb).
 
 <img src="images/demo.png" width="500px" alt="demo"/>
