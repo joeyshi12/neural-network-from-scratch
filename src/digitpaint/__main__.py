@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 import joblib
 import pygame as pg
@@ -10,10 +11,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("model", help="File path to model weights")
     args = parser.parse_args()
-    manager = PaintManager(model=joblib.load(args.model), width=560, heading_size=40)
+    manager = PaintManager(model=joblib.load(args.model))
     while True:
         for event in pg.event.get():
-            manager.handle_event(event)
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit(1)
+            elif event.type == pg.KEYDOWN:
+                manager.on_key(event.key)
         manager.update()
 
 

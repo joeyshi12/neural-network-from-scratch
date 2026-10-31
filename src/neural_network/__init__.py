@@ -22,45 +22,12 @@ class MLPClassifier:
         self.layer_sizes = []
         self.weights = []
 
-    def fun_obj(self, weights_flat, X, Y):
-        weights = unflatten_weights(weights_flat, self.layer_sizes)
-        activations = [X]
-        activation_derivatives = []
-        Z = None
-        for W, b in weights:
-            Z = activations[-1] @ W.T + b
-            activations.append(sigmoid(Z))
-            activation_derivatives.append(sigmoid_prime(Z))
-
-        assert Z is not None
-        f = np.sum(-Z[Y.astype(bool)] + np.log(np.sum(np.exp(Z), axis=1)))
-        grad = np.exp(Z) / np.sum(np.exp(Z), axis=1)[:, None] - Y
-        grad_W = grad.T @ activations[-2]
-        grad_b = np.sum(grad, axis=0)
-        g = [(grad_W, grad_b)]
-
-        for i in range(len(self.layer_sizes) - 2, 0, -1):
-            W, b = weights[i]
-            grad = grad @ W * activation_derivatives[i - 1]
-            grad_W = grad.T @ activations[i - 1]
-            grad_b = np.sum(grad, axis=0)
-            g = [(grad_W, grad_b)] + g
-        g = flatten_weights(g)
-
-        f += 0.5 * self.lammy * np.sum(weights_flat**2)
-        g += self.lammy * weights_flat
-        return f, g
-
     def fit(self, X, y):
         Y = label_binarizer_fit_transform(y)
         self.layer_sizes = [X.shape[1]] + self.hidden_layer_sizes + [Y.shape[1]]
-        size = 0
-        for i in range(len(self.layer_sizes) - 1):
-            size += (
-                self.layer_sizes[i + 1] * self.layer_sizes[i] + self.layer_sizes[i + 1]
-            )
-        weights_flat = 0.01 * np.random.randn(size)
+        size = sum(self.layer_sizes[i] * self.layer_sizes[i - 1] + self.layer_sizes[i] for i in range(1, len(self.layer_sizes)))
 
+        weights_flat = 0.01 * np.random.randn(size)
         num_batches = 100
         for epoch in range(self.epochs):
             loss = None
@@ -89,3 +56,32 @@ class MLPClassifier:
             X = 1 / (1 + np.exp(-Z))
         assert Z is not None
         return np.argmax(Z, axis=1)
+
+    def fun_obj(self, weights_flat, X, Y):
+        weights = unflatten_weights(weights_flat, self.layer_sizes)
+        activations = [X]
+        activation_derivatives = []
+        Z = None
+        for W, b in weights:
+            Z = activations[-1] @ W.T + b
+            activations.append(sigmoid(Z))
+            activation_derivatives.append(sigmoid_prime(Z))
+
+        assert Z is not None
+        f = np.sum(-Z[Y.astype(bool)] + np.log(np.sum(np.exp(Z), axis=1)))
+        grad = np.exp(Z) / np.sum(np.exp(Z), axis=1)[:, None] - Y
+        grad_W = grad.T @ activations[-2]
+        grad_b = np.sum(grad, axis=0)
+        g = [(grad_W, grad_b)]
+
+        for i in range(len(self.layer_sizes) - 2, 0, -1):
+            W, b = weights[i]
+            grad = grad @ W * activation_derivatives[i - 1]
+            grad_W = grad.T @ activations[i - 1]
+            grad_b = np.sum(grad, axis=0)
+            g = [(grad_W, grad_b)] + g
+        g = flatten_weights(g)
+
+        f += 0.5 * self.lammy * np.sum(weights_flat**2)
+        g += self.lammy * weights_flat
+        return f, g
