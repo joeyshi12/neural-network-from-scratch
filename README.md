@@ -22,7 +22,7 @@ pip install -e .
 Test the model by running inference against digits that you draw on a digital canvas.
 
 ```bash
-digitpaint models/example1.model
+digitpaint models/digit_classifier.pkl
 ```
 
 ### Controls

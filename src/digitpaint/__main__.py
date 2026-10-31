@@ -1,7 +1,7 @@
 import argparse
+import pickle
 import sys
 
-import joblib
 import pygame as pg
 
 from digitpaint.manager import PaintManager
@@ -11,7 +11,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("model", help="File path to model weights")
     args = parser.parse_args()
-    manager = PaintManager(model=joblib.load(args.model))
+
+    with open(args.model, "rb") as f:
+        model = pickle.load(f)
+
+    manager = PaintManager(model=model)
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
