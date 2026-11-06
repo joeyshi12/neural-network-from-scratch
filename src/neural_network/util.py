@@ -6,8 +6,7 @@ def flatten_weights(weights) -> np.ndarray:
 
 
 def unflatten_weights(
-    weights_flat: np.ndarray,
-    layer_sizes: list[int]
+    weights_flat: np.ndarray, layer_sizes: list[int]
 ) -> list[tuple[np.ndarray, np.ndarray]]:
     weights = []
     counter = 0
@@ -32,6 +31,14 @@ def label_binarizer_fit_transform(y) -> np.ndarray:
     for i, label in enumerate(y):
         Y[i, indices[label]] = 1
     return Y
+
+
+def softmax(Z: np.ndarray):
+    # Subtracting the max of each row first will help avoid overflow and
+    # also still return the same result
+    # https://stats.stackexchange.com/questions/304758/softmax-overflow
+    Z = Z - Z.max(axis=1, keepdims=True)
+    return np.exp(Z) / np.sum(np.exp(Z), axis=1)[:, None]
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
