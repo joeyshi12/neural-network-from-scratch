@@ -81,12 +81,15 @@ class MLPClassifier:
 
         # Compute log softmax loss and parameter derivatives
         N = X.shape[0]
-        loss = np.average(np.log(np.sum(np.exp(Z), axis=1)) - Z[Y.astype(bool)])
+        loss = np.mean(np.log(np.sum(np.exp(Z), axis=1)) - Z[Y.astype(bool)])
+        # Add regularization for weights
+        loss += 0.5 * self.alpha * sum(np.sum(W**2) for W, _ in weights)
         Q = (util.softmax(Z) - Y) / N
         weight_derivatives = []
         for i in range(len(weights) - 1, -1, -1):
             W, b = weights[i]
-            W_grad = Q.T @ activations[i]
+            # Include regularization for weight derivatives
+            W_grad = Q.T @ activations[i] + self.alpha * W
             b_grad = np.sum(Q, axis=0)
             weight_derivatives.append((W_grad, b_grad))
             if i > 0:
@@ -94,9 +97,4 @@ class MLPClassifier:
 
         weight_derivatives.reverse()
         gradient = util.flatten_weights(weight_derivatives)
-
-        # Add on regularization terms
-        loss += 0.5 * self.alpha * np.sum(weights_flat**2)
-        gradient += self.alpha * weights_flat
-
         return loss, gradient
