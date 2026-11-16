@@ -15,6 +15,7 @@ def main():
     with open(args.model, "rb") as f:
         model = pickle.load(f)
 
+    clock = pg.time.Clock()
     manager = PaintManager(model=model)
     while True:
         for event in pg.event.get():
@@ -23,7 +24,8 @@ def main():
                 sys.exit(1)
             elif event.type == pg.KEYDOWN:
                 manager.on_key(event.key)
-        manager.update()
+        manager.update(clock.tick(60))
+        pg.display.flip()
 
 
 if __name__ == "__main__":

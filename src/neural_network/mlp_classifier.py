@@ -41,7 +41,8 @@ class MLPClassifier:
         )
 
         N = X.shape[0]
-        weights_flat = 0.01 * np.random.randn(size)
+        weights_flat = 0.01 * np.random.randn(size) if not self.weights \
+            else util.flatten_weights(self.weights)
         for epoch in range(self.max_iter):
             total_loss = 0
             order = np.random.choice(N, size=N, replace=False)
@@ -58,13 +59,17 @@ class MLPClassifier:
         self.weights = util.unflatten_weights(weights_flat, self.layer_sizes)
 
     def predict(self, X: np.ndarray):
+        return np.argmax(self._final_preactivations(X), axis=1)
+
+    def predict_proba(self, X: np.ndarray):
+        return util.softmax(self._final_preactivations(X))
+
+    def _final_preactivations(self, X: np.ndarray):
         A = X
         for W, b in self.weights[:-1]:
             A = self.activation_func(A @ W.T + b)
-
         W, b = self.weights[-1]
-        Z = A @ W.T + b
-        return np.argmax(Z, axis=1)
+        return A @ W.T + b
 
     def _backprop(self, weights_flat: np.ndarray, X: np.ndarray, Y: np.ndarray):
         weights = util.unflatten_weights(weights_flat, self.layer_sizes)
