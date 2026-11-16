@@ -3,7 +3,7 @@
 An implementation of a neural network based on the `sklearn.neural_network` style.
 Full article explanation is contained in [neural_network.ipynb](notebooks/neural_network.ipynb).
 
-<img src="images/demo.png" alt="demo"/>
+<img src="images/demo.png" width="500px" alt="demo"/>
 
 ## Getting Started
 
