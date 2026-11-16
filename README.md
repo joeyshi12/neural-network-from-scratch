@@ -27,8 +27,8 @@ digitpaint models/digit_classifier.pkl
 
 ### Controls
 
-- Clear canvas: c
-- Guess digit with model: \<space\>
+- Click and drag your mouse over the canvas to use the brush
+- Clear canvas by pressing `c`
 
 ## Training the model
 
