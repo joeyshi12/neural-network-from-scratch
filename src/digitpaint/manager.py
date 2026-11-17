@@ -15,10 +15,7 @@ class PaintManager:
     DIGITS_ROW_HEIGHT: int = 30
 
     def __init__(self, model: MLPClassifier):
-        pg.init()
-        pg.display.set_caption("Digit Paint")
         self.surface = pg.display.set_mode((self.WIDTH, self.WIDTH + self.HEADING_SIZE))
-        self.clock = pg.time.Clock()
         self.model = model
         self.font = pg.font.SysFont("lucidaconsole", 16, bold=True)
         self.predict_remaining_ms = -1
@@ -26,18 +23,18 @@ class PaintManager:
         self.canvas = np.zeros(
             (self.WIDTH // self.UNIT_LENGTH, self.WIDTH // self.UNIT_LENGTH)
         )
-        self.clear()
+        self._clear()
 
     def on_key(self, key: int) -> None:
         if key == pg.K_c:
-            self.clear()
+            self._clear()
 
     def update(self, dt: int):
         if pg.mouse.get_pressed()[0]:
             x, y = pg.mouse.get_pos()
             row = (y - self.HEADING_SIZE) // self.UNIT_LENGTH
             col = x // self.UNIT_LENGTH
-            self.draw(row, col)
+            self._draw_circle(row, col)
             if not self.predict_queued:
                 self.predict_remaining_ms = self.QUEUE_MS
                 self.predict_queued = True
@@ -45,10 +42,10 @@ class PaintManager:
         if self.predict_queued:
             self.predict_remaining_ms -= dt
             if self.predict_remaining_ms <= 0:
-                self.render_prediction()
+                self._render_prediction()
                 self.predict_queued = False
 
-    def draw(self, row: int, col: int):
+    def _draw_circle(self, row: int, col: int):
         rows, cols = self.canvas.shape
         for i in range(-self.BRUSH_RADIUS, self.BRUSH_RADIUS + 1):
             for j in range(-self.BRUSH_RADIUS, self.BRUSH_RADIUS + 1):
@@ -67,7 +64,7 @@ class PaintManager:
                 )
                 pg.draw.rect(self.surface, (0, 0, 0), rect)
 
-    def render_prediction(self):
+    def _render_prediction(self):
         data = np.zeros((28, 28))
         cell_length = self.canvas.shape[0] // 28
         for i in range(28):
@@ -81,7 +78,7 @@ class PaintManager:
         probabilities = self.model.predict_proba(np.array([data.flatten()]))[0]
         width, _ = self.surface.get_size()
         bar_container_width = width // probabilities.size
-        self.draw_empty_header()
+        self._draw_empty_header()
         for i, prob in enumerate(probabilities):
             rect = (
                 bar_container_width * i + self.PROB_BAR_MARGIN,
@@ -94,17 +91,17 @@ class PaintManager:
             left = bar_container_width * i + bar_container_width // 2 - digit_surface.get_width() // 2
             self.surface.blit(digit_surface, (left, 10))
 
-    def draw_empty_header(self):
+    def _draw_empty_header(self):
         width, _ = self.surface.get_size()
         pg.draw.rect(self.surface, (160, 160, 160), (0, 0, width, self.HEADING_SIZE))
         pg.draw.rect(self.surface, (0, 0, 0), (0, self.DIGITS_ROW_HEIGHT, width, 1))
         pg.draw.rect(self.surface, (0, 0, 0), (0, self.HEADING_SIZE - 2, width, 2))
 
-    def clear(self):
+    def _clear(self):
         for row in self.canvas:
             for i, _ in enumerate(row):
                 row[i] = 0
         width, height = self.surface.get_size()
         rect = (0, self.HEADING_SIZE, width, height - self.HEADING_SIZE)
         pg.draw.rect(self.surface, (255, 255, 255), rect)
-        self.draw_empty_header()
+        self._draw_empty_header()

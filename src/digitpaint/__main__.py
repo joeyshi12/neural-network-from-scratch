@@ -15,6 +15,8 @@ def main():
     with open(args.model, "rb") as f:
         model = pickle.load(f)
 
+    pg.init()
+    pg.display.set_caption("Digit Paint")
     clock = pg.time.Clock()
     manager = PaintManager(model=model)
     while True:
